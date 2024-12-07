@@ -1,9 +1,11 @@
 package crawler
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/champlooein/jj/internal/consts"
@@ -11,10 +13,11 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
-	chapterTitleMatchRegexp = `(?m)(^第[ \f\n\r\t\v]*[0123456789一二三四五六七八九十零〇百千两]+[ \f\r\t\v]*[章卷节][ \f\r\t\v]*\S*$)|(^卷[ \f\n\r\t\v]*[0123456789一二三四五六七八九十零〇百千两]+[ \f\r\t\v]*\S*$)`
+	chapterTitleMatchRegexp = `(?m)(^第[ \f\n\r\t\v]*[0123456789一二三四五六七八九十零〇百千两]+[ \f\r\t\v]*[章卷节]\s+.*$)|(^卷[ \f\n\r\t\v]*[0123456789一二三四五六七八九十零〇百千两]+\s+.*$)`
 
 	shukuNovelDetailUrl = shukuRepo.url + "/yanqing/%s.html"
 
@@ -89,15 +92,37 @@ func (c shukuCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []*
 		pageTitleToUrlArr = append(pageTitleToUrlArr, &lo.Entry[string, string]{Key: s.Text(), Value: pageUrl})
 	})
 
+	eg, _ := errgroup.WithContext(context.Background())
+	ch, m := make(chan *lo.Entry[string, string]), sync.Map{}
+	eg.SetLimit(n)
+
+	utils.Go(func() {
+		for _, pageTitleToUrl := range pageTitleToUrlArr {
+			ch <- pageTitleToUrl
+		}
+	})
+
+	for i := 0; i < len(pageTitleToUrlArr); i++ {
+		eg.Go(func() error {
+			pageTitleToUrl := <-ch
+			pageContent, subErr := c.crawlPage(pageTitleToUrl.Value)
+			if subErr != nil {
+				return errors.WithMessagef(subErr, "crawl page err, Title: %s", pageTitleToUrl.Key)
+			}
+			glog.Infof("crawl page ok.\n pageTitle: %s\n pageContent: \n%s\n", pageTitleToUrl.Key, pageContent)
+
+			m.Store(pageTitleToUrl.Key, pageContent)
+			return nil
+		})
+	}
+	if err = eg.Wait(); err != nil {
+		return nil, err
+	}
+
 	var sb strings.Builder
 	for _, pageTitleToUrl := range pageTitleToUrlArr {
-		var pageContent string
-
-		pageContent, err = c.crawlPage(pageTitleToUrl.Value)
-		if err != nil {
-			return nil, errors.WithMessagef(err, "crawl page err, Title: %s", pageTitleToUrl.Key)
-		}
-		glog.Infof("crawl page ok.\n pageTitle: %s\n pageContent: \n%s\n", pageTitleToUrl.Key, pageContent)
+		v, _ := m.Load(pageTitleToUrl.Key)
+		pageContent := v.(string)
 
 		_, err = sb.WriteString(pageContent)
 		if err != nil {

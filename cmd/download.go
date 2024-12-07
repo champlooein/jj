@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/champlooein/jj/internal/crawler"
 	"github.com/spf13/cobra"
@@ -10,6 +11,7 @@ import (
 
 var (
 	output string
+	limit  int
 
 	downloadCmd = &cobra.Command{
 		Use:   "download",
@@ -24,14 +26,16 @@ var (
 			}
 
 			fmt.Println(info.String())
-			fmt.Println("Continue download?(yes or no)")
+			fmt.Print("Continue download?(yes or no)")
 
 			var s string
 			fmt.Scanln(&s)
 			switch s {
 			case "yes", "y", "Y":
 				fmt.Println("Download Start...")
-				chapterTitleToContentArr, err := crawler.Crawl(novelNo, 1)
+				start := time.Now()
+
+				chapterTitleToContentArr, err := crawler.Crawl(novelNo, limit)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "Crawl novel error: %v", err)
 					return
@@ -42,18 +46,20 @@ var (
 					fmt.Fprintf(os.Stderr, "Save novel error: %v", err)
 					return
 				}
+				
+				fmt.Printf("Download finish, enjoy yourself! (cost:%vs)", time.Since(start).Seconds())
 			default:
 				fmt.Println("Download terminated!")
 			}
 
-			fmt.Println("Download finish, enjoy yourself!")
 		},
 	}
 )
 
 func init() {
-	downloadCmd.Flags().StringVarP(&output, "output", "o", "./", "Output folder")
+	downloadCmd.Flags().StringVarP(&output, "output", "o", "./", "output folder")
 	downloadCmd.Flags().StringVarP(&repo, "repo", "r", "banxia", "novel repo")
+	downloadCmd.Flags().IntVarP(&limit, "limit", "l", 3, "concurrent crawling limit")
 	downloadCmd.Flags().StringVarP(&novelNo, "no", "n", "", "novel number")
 	if err := downloadCmd.MarkFlagRequired("no"); err != nil {
 		panic(err)
