@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/champlooein/jj/pkg/utils"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"golang.org/x/net/html"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -65,16 +67,34 @@ func (c banxiaCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []
 		}
 	})
 
+	var (
+		eg errgroup.Group
+		m  sync.Map
+	)
+
+	eg.SetLimit(n)
 	for _, chapterTitleToUrl := range chapterTitleToUrlArr {
-		var chapterContent string
+		eg.Go(func() error {
+			var chapterContent string
 
-		chapterContent, err = c.crawlChapter(chapterTitleToUrl.Value)
-		if err != nil {
-			return nil, errors.WithMessagef(err, "crawl chapter err, Title: %s", chapterTitleToUrl.Key)
-		}
-		slog.Info(fmt.Sprintf("crawl chapter ok.\n chapterTitle: %s\n chapterContent: \n%s\n", chapterTitleToUrl.Key, chapterContent))
+			chapterContent, err = c.crawlChapter(chapterTitleToUrl.Value)
+			if err != nil {
+				return errors.WithMessagef(err, "crawl chapter err, Title: %s", chapterTitleToUrl.Key)
+			}
+			slog.Info(fmt.Sprintf("crawl chapter ok.\n chapterTitle: %s\n chapterContent: \n%s\n", chapterTitleToUrl.Key, chapterContent))
 
-		chapterTitleToContentArr = append(chapterTitleToContentArr, &lo.Entry[string, string]{Key: chapterTitleToUrl.Key, Value: chapterContent})
+			m.Store(chapterTitleToUrl.Key, chapterContent)
+			return nil
+		})
+	}
+	err = eg.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, chapterTitleToUrl := range chapterTitleToUrlArr {
+		chapterContent, _ := m.Load(chapterTitleToUrl.Key)
+		chapterTitleToContentArr = append(chapterTitleToContentArr, &lo.Entry[string, string]{Key: chapterTitleToUrl.Key, Value: chapterContent.(string)})
 	}
 
 	return chapterTitleToContentArr, nil
