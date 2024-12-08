@@ -2,11 +2,11 @@ package crawler
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/champlooein/jj/pkg/utils"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"golang.org/x/net/html"
@@ -72,7 +72,7 @@ func (c banxiaCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []
 		if err != nil {
 			return nil, errors.WithMessagef(err, "crawl chapter err, Title: %s", chapterTitleToUrl.Key)
 		}
-		glog.Infof("crawl chapter ok.\n chapterTitle: %s\n chapterContent: \n%s\n", chapterTitleToUrl.Key, chapterContent)
+		slog.Info(fmt.Sprintf("crawl chapter ok.\n chapterTitle: %s\n chapterContent: \n%s\n", chapterTitleToUrl.Key, chapterContent))
 
 		chapterTitleToContentArr = append(chapterTitleToContentArr, &lo.Entry[string, string]{Key: chapterTitleToUrl.Key, Value: chapterContent})
 	}

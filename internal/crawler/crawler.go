@@ -2,18 +2,17 @@ package crawler
 
 import (
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"strings"
 
 	"github.com/champlooein/jj/internal/consts"
 	"github.com/champlooein/jj/pkg/utils"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 )
 
 type Crawler interface {
-	//Search(novelTitle, novelAuthor string) (novelNo string, meta NovelMetaInfo, err error)
 	Info(novelNo string) (info NovelMetaInfo, err error)
 	Crawl(novelNo string, n int) (chapterTitleToContentArr []*lo.Entry[string, string], err error)
 	Save(novelTitle, novelIntro string, chapterTitleToContentArr []*lo.Entry[string, string], path string) (err error)
@@ -53,7 +52,7 @@ func NewCrawlerFromRepo(r string) Crawler {
 	case shukuRepo.name:
 		return defaultShukuCrawler
 	default:
-		glog.Warning("unknown repo, using default")
+		slog.Warn("unknown repo, using default")
 		return DefaultCrawler
 	}
 }

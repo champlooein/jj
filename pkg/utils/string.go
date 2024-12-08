@@ -2,9 +2,10 @@ package utils
 
 import (
 	"bufio"
+	"fmt"
+	"log/slog"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/liuzl/gocc"
 )
 
@@ -40,7 +41,7 @@ func ConvertTraditionalToSimplified(input string) string {
 	converter, _ := gocc.New("t2s")
 	output, err := converter.Convert(input)
 	if err != nil {
-		glog.Warningf("ConvertTraditionalToSimplified err, err: %#v", err)
+		slog.Warn(fmt.Sprintf("ConvertTraditionalToSimplified err, err: %#v", err))
 	}
 
 	return output

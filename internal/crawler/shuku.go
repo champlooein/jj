@@ -3,13 +3,13 @@ package crawler
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strings"
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/champlooein/jj/pkg/utils"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"golang.org/x/sync/errgroup"
@@ -104,7 +104,7 @@ func (c shukuCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []*
 			if subErr != nil {
 				return errors.WithMessagef(subErr, "crawl page err, Title: %s", pageTitleToUrl.Key)
 			}
-			glog.Infof("crawl page ok.\n pageTitle: %s\n pageContent: \n%s\n", pageTitleToUrl.Key, pageContent)
+			slog.Info(fmt.Sprintf("crawl page ok.\n pageTitle: %s\n pageContent: \n%s\n", pageTitleToUrl.Key, pageContent))
 
 			m.Store(pageTitleToUrl.Key, pageContent)
 			return nil
