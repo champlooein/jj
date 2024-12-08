@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/champlooein/jj/internal/consts"
 	"github.com/champlooein/jj/pkg/utils"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -26,10 +25,6 @@ var (
 
 type shukuCrawler struct {
 	saver
-}
-
-func (c shukuCrawler) Search(novelTitle, novelAuthor string) (novelUrl string, metaInfo NovelMetaInfo, err error) {
-	return "", metaInfo, consts.EmptySearchResultErr
 }
 
 func (c shukuCrawler) Info(novelNo string) (info NovelMetaInfo, err error) {

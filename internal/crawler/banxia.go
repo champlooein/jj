@@ -2,11 +2,9 @@ package crawler
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/champlooein/jj/internal/consts"
 	"github.com/champlooein/jj/pkg/utils"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -15,7 +13,6 @@ import (
 )
 
 var (
-	banxiaSearchUrl      = banxiaRepo.url + "/modules/article/search_t.php?searchkey=%s"
 	banxiaNovelDetailUrl = banxiaRepo.url + "/books/%s.html"
 
 	defaultBanxiaCrawler = banxiaCrawler{saver: saver{}}
@@ -23,50 +20,6 @@ var (
 
 type banxiaCrawler struct {
 	saver
-}
-
-func (c banxiaCrawler) Search(novelTitle, novelAuthor string) (novelNo string, meta NovelMetaInfo, err error) {
-	// init http request
-	httpResp, err := utils.HttpGet(fmt.Sprintf(banxiaSearchUrl, novelTitle), true)
-	if err != nil {
-		return "", meta, err
-	}
-	defer httpResp.Body.Close()
-	if httpResp.StatusCode == http.StatusMovedPermanently || httpResp.StatusCode == http.StatusFound {
-		novelNo, err = utils.GetUrlLastSegment(httpResp.Header.Get(consts.LocationKey))
-		if err != nil {
-			return "", meta, err
-		}
-
-		meta, err = c.Info(novelNo)
-		return novelNo, meta, nil
-	}
-
-	// Parsing search results
-	var doc *goquery.Document
-	if doc, err = goquery.NewDocumentFromReader(httpResp.Body); err != nil {
-		return "", meta, errors.Wrap(err, "can't parse html")
-	}
-	for _, node := range doc.Find(".pop-book2").Nodes {
-		d := goquery.NewDocumentFromNode(node)
-		if d.Find(".pop-tit").Text() != novelTitle {
-			continue
-		}
-		if d.Find(".pop-Intro").Text() != novelAuthor {
-			continue
-		}
-
-		novelUrl, _ := d.Find("a[target='_blank']").Attr("href")
-		novelNo, err = utils.GetUrlLastSegment(novelUrl)
-		if err != nil {
-			return "", meta, err
-		}
-
-		meta, err = c.Info(novelNo)
-		return novelNo, meta, err
-	}
-
-	return "", meta, errors.WithStack(consts.EmptySearchResultErr)
 }
 
 func (c banxiaCrawler) Info(novelNo string) (info NovelMetaInfo, err error) {

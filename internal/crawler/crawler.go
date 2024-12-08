@@ -13,7 +13,7 @@ import (
 )
 
 type Crawler interface {
-	Search(novelTitle, novelAuthor string) (novelNo string, meta NovelMetaInfo, err error)
+	//Search(novelTitle, novelAuthor string) (novelNo string, meta NovelMetaInfo, err error)
 	Info(novelNo string) (info NovelMetaInfo, err error)
 	Crawl(novelNo string, n int) (chapterTitleToContentArr []*lo.Entry[string, string], err error)
 	Save(novelTitle, novelIntro string, chapterTitleToContentArr []*lo.Entry[string, string], path string) (err error)
