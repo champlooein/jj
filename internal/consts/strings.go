@@ -1,5 +1,5 @@
 package consts
 
 var (
-	NovelIntroKey = "简介："
+	NovelIntroKey = "简介"
 )
