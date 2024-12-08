@@ -10,6 +10,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/champlooein/jj/pkg/utils"
+	"github.com/champlooein/kit/goalong"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"golang.org/x/sync/errgroup"
@@ -91,7 +92,7 @@ func (c shukuCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []*
 	ch, m := make(chan *lo.Entry[string, string]), sync.Map{}
 	eg.SetLimit(n)
 
-	utils.Go(func() {
+	goalong.Go(context.Background(), func() {
 		for _, pageTitleToUrl := range pageTitleToUrlArr {
 			ch <- pageTitleToUrl
 		}
