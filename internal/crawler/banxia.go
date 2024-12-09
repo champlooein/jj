@@ -71,8 +71,8 @@ func (c banxiaCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []
 		eg errgroup.Group
 		m  sync.Map
 	)
-
 	eg.SetLimit(n)
+
 	for _, chapterTitleToUrl := range chapterTitleToUrlArr {
 		eg.Go(func() error {
 			var chapterContent string

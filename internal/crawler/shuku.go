@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"regexp"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/champlooein/jj/pkg/utils"
-	"github.com/champlooein/kit/goalong"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"golang.org/x/sync/errgroup"
@@ -88,19 +86,14 @@ func (c shukuCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []*
 		pageTitleToUrlArr = append(pageTitleToUrlArr, &lo.Entry[string, string]{Key: s.Text(), Value: pageUrl})
 	})
 
-	eg, _ := errgroup.WithContext(context.Background())
-	ch, m := make(chan *lo.Entry[string, string]), sync.Map{}
+	var (
+		eg errgroup.Group
+		m  sync.Map
+	)
 	eg.SetLimit(n)
 
-	goalong.Go(context.Background(), func() {
-		for _, pageTitleToUrl := range pageTitleToUrlArr {
-			ch <- pageTitleToUrl
-		}
-	})
-
-	for i := 0; i < len(pageTitleToUrlArr); i++ {
+	for _, pageTitleToUrl := range pageTitleToUrlArr {
 		eg.Go(func() error {
-			pageTitleToUrl := <-ch
 			pageContent, subErr := c.crawlPage(pageTitleToUrl.Value)
 			if subErr != nil {
 				return errors.WithMessagef(subErr, "crawl page err, Title: %s", pageTitleToUrl.Key)
