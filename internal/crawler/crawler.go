@@ -63,7 +63,9 @@ func (s saver) Save(novelTitle, novelIntro string, chapterTitleToContentArr []*l
 			return errors.Errorf("path invalid, not a txt file, path: %v", path)
 		}
 	} else {
-		path += string(filepath.Separator) + novelTitle + ".txt"
+		if path[len(path)-1] != filepath.Separator {
+			path += string(filepath.Separator) + novelTitle + ".txt"
+		}
 	}
 
 	var sb strings.Builder
