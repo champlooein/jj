@@ -26,7 +26,7 @@ var (
 			crawler := crawler.NewCrawlerFromRepo(repo)
 			info, err := crawler.Info(novelNo)
 			if err != nil {
-				log.Err(err).Msg("get novel info error")
+				log.Error().Err(err).Msg("get novel info error")
 				return
 			}
 

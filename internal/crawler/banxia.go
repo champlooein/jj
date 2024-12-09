@@ -40,7 +40,7 @@ func (c banxiaCrawler) Info(novelNo string) (info NovelMetaInfo, err error) {
 		return info, errors.Wrapf(err, "can't parse html, url:%s", fmt.Sprintf(banxiaNovelDetailUrl, novelNo))
 	}
 	if strings.Contains(doc.Find("title").Text(), consts.BanxiaNovelNotExistTitle) {
-		return info, errors.Wrapf(err, "novel not exist, novelNo:%s", novelNo)
+		return info, errors.Wrapf(consts.NovelNotExistError, "novelNo_%s", novelNo)
 	}
 
 	title = utils.ConvertTraditionalToSimplified(doc.Find(".book-describe").Find("h1").Text())
