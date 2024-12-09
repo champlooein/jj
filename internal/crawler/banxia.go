@@ -44,7 +44,7 @@ func (c banxiaCrawler) Info(novelNo string) (info NovelMetaInfo, err error) {
 	}
 
 	title = utils.ConvertTraditionalToSimplified(doc.Find(".book-describe").Find("h1").Text())
-	intro = utils.NovelContentFormat(strings.Replace(utils.ConvertTraditionalToSimplified(utils.ExtractNovelTextFromHtml(doc.Find(".describe-html").Nodes[0])), "文案:", "", 1))
+	intro = c.extractIntro(utils.ExtractNovelTextFromHtml(doc.Find(".describe-html").Nodes[0]))
 	doc.Find(".book-describe").Find("p").EachWithBreak(func(i int, s *goquery.Selection) bool {
 		author = utils.ConvertTraditionalToSimplified(strings.Replace(s.Text(), "作者︰", "", 1))
 		return false
@@ -132,5 +132,9 @@ func (c banxiaCrawler) crawlChapter(chapterUrl string) (string, error) {
 	text.First().Remove()
 	doc.Find("#nr1").Find("span").Remove()
 
-	return utils.ConvertTraditionalToSimplified(utils.ExtractNovelTextFromHtml(doc.Find("#nr1").Nodes[0])), nil
+	return utils.TrimRowSpaceInMultiParagraph(utils.ConvertTraditionalToSimplified(utils.ExtractNovelTextFromHtml(doc.Find("#nr1").Nodes[0]))), nil
+}
+
+func (c banxiaCrawler) extractIntro(input string) string {
+	return utils.NovelContentFormat(strings.Replace(utils.ConvertTraditionalToSimplified(input), "文案:", "", 1))
 }

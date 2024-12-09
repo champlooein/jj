@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"bufio"
 	"fmt"
 	"regexp"
 	"strings"
@@ -15,7 +16,7 @@ import (
 )
 
 var (
-	chapterTitleMatchRegexp = `(?m)(^第[ \f\n\r\t\v]*[0123456789一二三四五六七八九十零〇百千两]+[ \f\r\t\v]*[章卷节]\s+.*$)|(^卷[ \f\n\r\t\v]*[0123456789一二三四五六七八九十零〇百千两]+\s+.*$)`
+	chapterTitleMatchRegexp = `(?m)^第[ \f\r\t\v0123456789一二三四五六七八九十零〇百千两]+[章卷节](([ \f\r\t\v]+.*$)|($))`
 
 	shukuNovelDetailUrl = shukuRepo.url + "/yanqing/%s.html"
 
@@ -53,18 +54,13 @@ func (c shukuCrawler) Info(novelNo string) (info NovelMetaInfo, err error) {
 	if err != nil {
 		return info, err
 	}
-	pageContent = utils.TrimRowSpaceInMultiParagraph(pageContent)
 
 	matches := regexp.MustCompile(chapterTitleMatchRegexp).FindAllStringIndex(pageContent, 1)
 	if len(matches) == 0 {
 		return NovelMetaInfo{Title: title, Author: author}, nil
 	}
 
-	intro = utils.NovelContentFormat(pageContent[:matches[0][0]])
-	if p := strings.Index(intro, "文案："); p >= 0 {
-		intro = utils.NovelContentFormat(intro[p+len("文案：") : matches[0][0]])
-	}
-
+	intro = c.extractIntro(pageContent[:matches[0][0]])
 	return NovelMetaInfo{Title: title, Author: author, Intro: intro}, nil
 }
 
@@ -113,7 +109,7 @@ func (c shukuCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []*
 		v, _ := m.Load(pageTitleToUrl.Key)
 		pageContent := v.(string)
 
-		_, err = sb.WriteString(pageContent)
+		_, err = sb.WriteString(fmt.Sprintf("%s\n", pageContent))
 		if err != nil {
 			return nil, errors.WithMessagef(err, "write page content err, Title: %s", pageTitleToUrl.Key)
 		}
@@ -134,11 +130,10 @@ func (c shukuCrawler) crawlPage(chapterUrl string) (string, error) {
 		return "", errors.Wrap(err, "can't parse html")
 	}
 
-	return doc.Find(".book_con").Text(), nil
+	return utils.TrimRowSpaceInMultiParagraph(doc.Find(".book_con").Text()), nil
 }
 
 func (c shukuCrawler) pageToChapterFormat(input string) (chapterTitleToContentArr []*lo.Entry[string, string]) {
-	input = utils.TrimRowSpaceInMultiParagraph(input)
 	matches := regexp.MustCompile(chapterTitleMatchRegexp).FindAllStringIndex(input, -1)
 	if len(matches) == 0 {
 		chapterTitleToContentArr = []*lo.Entry[string, string]{{Key: "正文", Value: input}}
@@ -158,4 +153,25 @@ func (c shukuCrawler) pageToChapterFormat(input string) (chapterTitleToContentAr
 	}
 
 	return chapterTitleToContentArr
+}
+
+func (c shukuCrawler) extractIntro(input string) string {
+	headers := []string{"简介：", "简介", "简介：", "简介："}
+
+	var result strings.Builder
+	scanner := bufio.NewScanner(strings.NewReader(input))
+
+	for scanner.Scan() {
+		for _, header := range headers {
+			line, cnt := scanner.Text(), 0
+			if line != header {
+				cnt++
+			}
+			if cnt == len(headers) {
+				result.WriteString(line)
+			}
+		}
+	}
+
+	return utils.NovelContentFormat(result.String())
 }
