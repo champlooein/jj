@@ -33,6 +33,8 @@ var (
 			}
 
 			fmt.Println(info.String())
+
+		enter:
 			fmt.Print("Continue download?(yes[y] or no[n]) ")
 
 			var s string
@@ -55,8 +57,11 @@ var (
 				}
 
 				fmt.Printf("Download finish, enjoy yourself! (cost:%vs)", time.Since(start).Seconds())
-			default:
+			case "no", "n", "N":
 				fmt.Println("Download terminated!")
+			default:
+				fmt.Println("The input is incorrect, please re-enter")
+				goto enter
 			}
 
 		},
