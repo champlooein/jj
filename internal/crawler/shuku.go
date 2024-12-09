@@ -156,7 +156,7 @@ func (c shukuCrawler) pageToChapterFormat(input string) (chapterTitleToContentAr
 }
 
 func (c shukuCrawler) extractIntro(input string) string {
-	headers := []string{"简介：", "简介", "简介：", "简介："}
+	headers := []string{"简介：", "简介", "文案：", "文案"}
 
 	var result strings.Builder
 	scanner := bufio.NewScanner(strings.NewReader(input))
