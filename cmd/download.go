@@ -21,6 +21,8 @@ var (
 		Run: func(cmd *cobra.Command, args []string) {
 			if verbose {
 				zerolog.SetGlobalLevel(zerolog.DebugLevel)
+			} else {
+				zerolog.SetGlobalLevel(zerolog.InfoLevel)
 			}
 
 			crawler := crawler.NewCrawlerFromRepo(repo)
@@ -52,7 +54,7 @@ var (
 					return
 				}
 
-				log.Info().Msgf("Download finish, enjoy yourself! (cost:%vs)", time.Since(start).Seconds())
+				fmt.Printf("Download finish, enjoy yourself! (cost:%vs)", time.Since(start).Seconds())
 			default:
 				fmt.Println("Download terminated!")
 			}
