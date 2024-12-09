@@ -30,8 +30,8 @@ var (
 				return
 			}
 
-			log.Info().Msg(info.String())
-			fmt.Print("Continue download?(yes or no) ")
+			fmt.Println(info.String())
+			fmt.Print("Continue download?(yes[y] or no[n]) ")
 
 			var s string
 			fmt.Scanln(&s)
@@ -54,7 +54,7 @@ var (
 
 				log.Info().Msgf("Download finish, enjoy yourself! (cost:%vs)", time.Since(start).Seconds())
 			default:
-				log.Info().Msg("Download terminated!")
+				fmt.Println("Download terminated!")
 			}
 
 		},

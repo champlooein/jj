@@ -109,7 +109,7 @@ func (c shukuCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []*
 		v, _ := m.Load(pageTitleToUrl.Key)
 		pageContent := v.(string)
 
-		_, err = sb.WriteString(fmt.Sprintf("%s\n", pageContent))
+		_, err = sb.WriteString(pageContent + "\n")
 		if err != nil {
 			return nil, errors.WithMessagef(err, "write page content err, Title: %s", pageTitleToUrl.Key)
 		}
@@ -162,13 +162,13 @@ func (c shukuCrawler) extractIntro(input string) string {
 	scanner := bufio.NewScanner(strings.NewReader(input))
 
 	for scanner.Scan() {
+		line, cnt := scanner.Text(), 0
 		for _, header := range headers {
-			line, cnt := scanner.Text(), 0
 			if line != header {
 				cnt++
 			}
 			if cnt == len(headers) {
-				result.WriteString(line)
+				result.WriteString(line + "\n")
 			}
 		}
 	}

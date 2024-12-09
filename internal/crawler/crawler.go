@@ -65,6 +65,8 @@ func (s saver) Save(novelTitle, novelIntro string, chapterTitleToContentArr []*l
 	} else {
 		if path[len(path)-1] != filepath.Separator {
 			path += string(filepath.Separator) + novelTitle + ".txt"
+		} else {
+			path += novelTitle + ".txt"
 		}
 	}
 
