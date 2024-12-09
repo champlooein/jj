@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/champlooein/jj/internal/crawler"
@@ -60,7 +61,7 @@ var (
 			case "no", "n", "N":
 				fmt.Println("Download terminated!")
 			default:
-				fmt.Println("The input is incorrect, please re-enter")
+				fmt.Fprintln(os.Stderr, "The input is incorrect, please re-enter")
 				goto enter
 			}
 
