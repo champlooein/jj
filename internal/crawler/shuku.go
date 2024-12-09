@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"bufio"
 	"fmt"
 	"regexp"
 	"strings"
@@ -156,22 +155,10 @@ func (c shukuCrawler) pageToChapterFormat(input string) (chapterTitleToContentAr
 }
 
 func (c shukuCrawler) extractIntro(input string) string {
-	headers := []string{"简介：", "简介", "文案：", "文案"}
-
-	var result strings.Builder
-	scanner := bufio.NewScanner(strings.NewReader(input))
-
-	for scanner.Scan() {
-		line, cnt := scanner.Text(), 0
-		for _, header := range headers {
-			if line != header {
-				cnt++
-			}
-			if cnt == len(headers) {
-				result.WriteString(line + "\n")
-			}
-		}
+	matchers := regexp.MustCompile(`(?m)((^简介：$)|(^简介$)|(^文案：$)|(^文案$))`).FindAllStringIndex(input, 1)
+	if len(matchers) == 0 {
+		return input
 	}
 
-	return utils.NovelContentFormat(result.String())
+	return utils.NovelContentFormat(input[matchers[0][1]:])
 }
