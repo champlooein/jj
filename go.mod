@@ -4,7 +4,6 @@ go 1.23
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.0
-	github.com/champlooein/kit v0.0.0-20241208044016-2c56a40cb2de
 	github.com/liuzl/gocc v0.0.0-20231231122217-0372e1059ca5
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.47.0
