@@ -2,13 +2,13 @@ package crawler
 
 import (
 	"fmt"
-	"log/slog"
 	"path/filepath"
 	"strings"
 
 	"github.com/champlooein/jj/internal/consts"
 	"github.com/champlooein/jj/pkg/utils"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 	"github.com/samber/lo"
 )
 
@@ -52,7 +52,7 @@ func NewCrawlerFromRepo(r string) Crawler {
 	case shukuRepo.name:
 		return defaultShukuCrawler
 	default:
-		slog.Warn("unknown repo, using default")
+		log.Warn().Msg("unknown repo, using default")
 		return DefaultCrawler
 	}
 }

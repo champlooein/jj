@@ -2,11 +2,10 @@ package utils
 
 import (
 	"bufio"
-	"fmt"
-	"log/slog"
 	"strings"
 
 	"github.com/liuzl/gocc"
+	"github.com/rs/zerolog/log"
 )
 
 func NovelContentFormat(input string) string {
@@ -41,7 +40,7 @@ func ConvertTraditionalToSimplified(input string) string {
 	converter, _ := gocc.New("t2s")
 	output, err := converter.Convert(input)
 	if err != nil {
-		slog.Warn(fmt.Sprintf("ConvertTraditionalToSimplified err, err: %#v", err))
+		log.Warn().AnErr("err", err).Msg("ConvertTraditionalToSimplified err")
 	}
 
 	return output

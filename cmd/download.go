@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/champlooein/jj/internal/crawler"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -18,38 +19,42 @@ var (
 		Short: "Download novel",
 		Long:  `Crawler novel from novel repo and save it to disk`,
 		Run: func(cmd *cobra.Command, args []string) {
+			if verbose {
+				zerolog.SetGlobalLevel(zerolog.DebugLevel)
+			}
+
 			crawler := crawler.NewCrawlerFromRepo(repo)
 			info, err := crawler.Info(novelNo)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "get novel info error: %v", err)
+				log.Err(err).Msg("get novel info error")
 				return
 			}
 
-			fmt.Println(info.String())
-			fmt.Print("Continue download?(yes or no)")
+			log.Info().Msg(info.String())
+			fmt.Print("Continue download?(yes or no) ")
 
 			var s string
 			fmt.Scanln(&s)
 			switch s {
 			case "yes", "y", "Y":
-				fmt.Println("Download Start...")
+				log.Info().Msg("Download Start...")
 				start := time.Now()
 
 				chapterTitleToContentArr, err := crawler.Crawl(novelNo, limit)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Crawl novel error: %v", err)
+					log.Err(err).Msg("Crawl novel error")
 					return
 				}
 
 				err = crawler.Save(info.Title, info.Intro, chapterTitleToContentArr, output)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "Save novel error: %v", err)
+					log.Err(err).Msg("Save novel error")
 					return
 				}
-				
-				fmt.Printf("Download finish, enjoy yourself! (cost:%vs)", time.Since(start).Seconds())
+
+				log.Info().Msgf("Download finish, enjoy yourself! (cost:%vs)", time.Since(start).Seconds())
 			default:
-				fmt.Println("Download terminated!")
+				log.Info().Msg("Download terminated!")
 			}
 
 		},

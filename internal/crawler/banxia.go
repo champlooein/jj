@@ -2,9 +2,10 @@ package crawler
 
 import (
 	"fmt"
-	"log/slog"
 	"strings"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/champlooein/jj/pkg/utils"
@@ -81,7 +82,7 @@ func (c banxiaCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []
 			if err != nil {
 				return errors.WithMessagef(err, "crawl chapter err, Title: %s", chapterTitleToUrl.Key)
 			}
-			slog.Info(fmt.Sprintf("crawl chapter ok.\n chapterTitle: %s\n chapterContent: \n%s\n", chapterTitleToUrl.Key, chapterContent))
+			log.Debug().Str("chapterTitle", chapterTitleToUrl.Key).Msg("crawl chapter ok")
 
 			m.Store(chapterTitleToUrl.Key, chapterContent)
 			return nil

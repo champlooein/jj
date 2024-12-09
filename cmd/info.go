@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/champlooein/jj/internal/crawler"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 )
 
@@ -20,24 +20,13 @@ var (
 			crawler := crawler.NewCrawlerFromRepo(repo)
 			info, err := crawler.Info(novelNo)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "get novel info error: %v", err)
+				log.Err(err).Msg("get novel info error")
 				return
 			}
 
 			fmt.Println(info.String())
 			return
 		},
-	}
-
-	showNovelInfo = func() error {
-		crawler := crawler.NewCrawlerFromRepo(repo)
-		info, err := crawler.Info(novelNo)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(info.String())
-		return nil
 	}
 )
 
