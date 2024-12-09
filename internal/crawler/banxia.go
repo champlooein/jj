@@ -5,6 +5,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/champlooein/jj/internal/consts"
 	"github.com/rs/zerolog/log"
 
 	"github.com/PuerkitoBio/goquery"
@@ -36,7 +37,10 @@ func (c banxiaCrawler) Info(novelNo string) (info NovelMetaInfo, err error) {
 
 	doc, err := goquery.NewDocumentFromReader(httpResp.Body)
 	if err != nil {
-		return info, errors.Wrap(err, "can't parse html")
+		return info, errors.Wrapf(err, "can't parse html, url:%s", fmt.Sprintf(banxiaNovelDetailUrl, novelNo))
+	}
+	if strings.Contains(doc.Find("title").Text(), consts.BanxiaNovelNotExistTitle) {
+		return info, errors.Wrapf(err, "novel not exist, novelNo:%s", novelNo)
 	}
 
 	title = utils.ConvertTraditionalToSimplified(doc.Find(".book-describe").Find("h1").Text())
