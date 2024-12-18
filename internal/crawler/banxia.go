@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -129,7 +130,9 @@ func (c banxiaCrawler) crawlChapter(chapterUrl string) (string, error) {
 
 		return true
 	})
-	text.First().Remove()
+	if ok, _ := regexp.Match(`^第\d+章`, []byte(utils.TrimRowSpaceInMultiParagraph(utils.ConvertTraditionalToSimplified(text.First().Text())))); ok {
+		text.First().Remove()
+	}
 	doc.Find("#nr1").Find("span").Remove()
 
 	return utils.TrimRowSpaceInMultiParagraph(utils.ConvertTraditionalToSimplified(utils.ExtractNovelTextFromHtml(doc.Find("#nr1").Nodes[0]))), nil
