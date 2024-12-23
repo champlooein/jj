@@ -58,6 +58,7 @@ func NewCrawlerFromRepo(r string) Crawler {
 }
 
 func (s saver) Save(novelTitle, novelIntro string, chapterTitleToContentArr []*lo.Entry[string, string], path string) error {
+	novelTitle = strings.Replace(novelTitle, `\`, "_", -1)
 	if ext := filepath.Ext(path); ext != "" {
 		if ext != ".txt" {
 			return errors.Errorf("path invalid, not a txt file, path: %v", path)
