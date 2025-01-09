@@ -98,9 +98,9 @@ func (c banxiaCrawler) Crawl(novelNo string, n int) (chapterTitleToContentArr []
 		return nil, err
 	}
 
-	for _, chapterTitleToUrl := range chapterTitleToUrlArr {
+	for i, chapterTitleToUrl := range chapterTitleToUrlArr {
 		chapterContent, _ := m.Load(chapterTitleToUrl.Key)
-		chapterTitleToContentArr = append(chapterTitleToContentArr, &lo.Entry[string, string]{Key: chapterTitleToUrl.Key, Value: chapterContent.(string)})
+		chapterTitleToContentArr = append(chapterTitleToContentArr, &lo.Entry[string, string]{Key: utils.FormatChapterTitle(chapterTitleToUrl.Key, i+1), Value: chapterContent.(string)})
 	}
 
 	return chapterTitleToContentArr, nil
@@ -119,6 +119,9 @@ func (c banxiaCrawler) crawlChapter(chapterUrl string) (string, error) {
 		return "", errors.Wrap(err, "can't parse html")
 	}
 
+	// 获取章节名称
+	title := utils.RemoveStringSpaces(utils.TrimRowSpaceInMultiParagraph(utils.ConvertTraditionalToSimplified(doc.Find("#nr_title").Text())))
+
 	// 删除第一行章节名和最后一行的广告
 	text := doc.Find("#nr1").Contents().FilterFunction(func(i int, s *goquery.Selection) bool {
 		if len(s.Nodes) == 0 || s.Nodes[0].Type != html.TextNode {
@@ -130,7 +133,8 @@ func (c banxiaCrawler) crawlChapter(chapterUrl string) (string, error) {
 
 		return true
 	})
-	if ok, _ := regexp.Match(`^第\d+章`, []byte(utils.TrimRowSpaceInMultiParagraph(utils.ConvertTraditionalToSimplified(text.First().Text())))); ok {
+	firstLine := utils.RemoveStringSpaces(utils.TrimRowSpaceInMultiParagraph(utils.ConvertTraditionalToSimplified(text.First().Text())))
+	if ok, _ := regexp.Match(`^第\d+章`, []byte(utils.TrimRowSpaceInMultiParagraph(utils.ConvertTraditionalToSimplified(text.First().Text())))); ok || firstLine == title {
 		text.First().Remove()
 	}
 	doc.Find("#nr1").Find("span").Remove()

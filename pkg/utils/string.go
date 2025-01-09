@@ -2,6 +2,8 @@ package utils
 
 import (
 	"bufio"
+	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/liuzl/gocc"
@@ -50,4 +52,25 @@ func ConvertTraditionalToSimplified(input string) string {
 	}
 
 	return output
+}
+
+func RemoveStringSpaces(input string) string {
+	sb := strings.Builder{}
+	for _, char := range input {
+		if char == ' ' || char == '\t' || char == '\n' || char == '\r' {
+			continue
+		}
+
+		sb.WriteRune(char)
+	}
+
+	return sb.String()
+}
+
+func FormatChapterTitle(input string, n int) string {
+	if ok, _ := regexp.Match(`^第\d+章`, []byte(input)); ok {
+		return input
+	}
+
+	return fmt.Sprintf("第%d章 %s", n, input)
 }
